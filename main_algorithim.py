@@ -16,6 +16,9 @@ from gui import play_video
 
 warnings.filterwarnings("ignore")
 
+current_directory = os.path.dirname(os.path.abspath(__file__))
+# Get the path to the preprocessing directory
+preprocessing_directory = os.path.join(current_directory, 'preprocessing')
 
 def calculate_histogram(frame):
 	"""Calculate the color histogram for a frame."""
@@ -364,16 +367,19 @@ def main(clip_path, clip_rgb):
 		'/Users/arshiabehzad/Downloads/Videos/video19.mp4',
 		'/Users/arshiabehzad/Downloads/Videos/video20.mp4']
 	
+	video_hashes_path = os.path.join(preprocessing_directory, 'video_hashes.pkl')
+	shot_boundaries_dict_path = os.path.join(preprocessing_directory, 'shot_boundaries_dict.pkl')
+	frame_histograms_dict_path = os.path.join(preprocessing_directory, 'frame_histograms_dict.pkl')
 	
-	with open('preprocessing/video_hashes.pkl', 'rb') as file:
+	with open(video_hashes_path, 'rb') as file:
 		video_hashes = pickle.load(file)
 		
 		# Loading shot_boundaries_dict
-	with open('preprocessing/shot_boundaries_dict.pkl', 'rb') as file:
+	with open(shot_boundaries_dict_path, 'rb') as file:
 		shot_boundaries_dict = pickle.load(file)
 		
 		# Loading frame_histograms_dict
-	with open('preprocessing/frame_histograms_dict.pkl', 'rb') as file:
+	with open(frame_histograms_dict_path, 'rb') as file:
 		frame_histograms_dict = pickle.load(file)
 		
 	start_time_main = time.time()
