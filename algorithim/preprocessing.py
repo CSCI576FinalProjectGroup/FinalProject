@@ -53,7 +53,7 @@ def get_video_segment_hashes(video_path, segment_length=3, overlap_fraction=0.3)
 			
 		frame_count += 1
 		
-	# Process the last segment
+		# Process the last segment
 	if frames:
 		avg_frame = np.mean(np.array(frames), axis=0).astype(np.uint8)
 		frame_hash = imagehash.phash(Image.fromarray(avg_frame))
@@ -96,7 +96,7 @@ def detect_shot_boundaries(video_path, threshold=0.5):
 			shot_boundaries.append(shot_boundary)
 			
 		prev_hist = frame_hist
-	#includes first frame if no shot boundaries found
+		#includes first frame if no shot boundaries found
 	video.release()
 	video = cv2.VideoCapture(video_path)
 	if not shot_boundaries:
@@ -115,25 +115,25 @@ def detect_shot_boundaries(video_path, threshold=0.5):
 
 def main():
 	database = ['/Users/arshiabehzad/Downloads/Videos/video1.mp4',
-				'/Users/arshiabehzad/Downloads/Videos/video2.mp4',
-				'/Users/arshiabehzad/Downloads/Videos/video3.mp4',
-				'/Users/arshiabehzad/Downloads/Videos/video4.mp4',
-				'/Users/arshiabehzad/Downloads/Videos/video5.mp4',
-				'/Users/arshiabehzad/Downloads/Videos/video6.mp4',
-				'/Users/arshiabehzad/Downloads/Videos/video7.mp4',
-				'/Users/arshiabehzad/Downloads/Videos/video8.mp4',
-				'/Users/arshiabehzad/Downloads/Videos/video9.mp4',
-				'/Users/arshiabehzad/Downloads/Videos/video10.mp4',
-				'/Users/arshiabehzad/Downloads/Videos/video11.mp4',
-				'/Users/arshiabehzad/Downloads/Videos/video12.mp4',
-				'/Users/arshiabehzad/Downloads/Videos/video13.mp4',
-				'/Users/arshiabehzad/Downloads/Videos/video14.mp4',
-				'/Users/arshiabehzad/Downloads/Videos/video15.mp4',
-				'/Users/arshiabehzad/Downloads/Videos/video16.mp4',
-				'/Users/arshiabehzad/Downloads/Videos/video17.mp4',
-				'/Users/arshiabehzad/Downloads/Videos/video18.mp4',
-				'/Users/arshiabehzad/Downloads/Videos/video19.mp4',
-				'/Users/arshiabehzad/Downloads/Videos/video20.mp4']
+		'/Users/arshiabehzad/Downloads/Videos/video2.mp4',
+		'/Users/arshiabehzad/Downloads/Videos/video3.mp4',
+		'/Users/arshiabehzad/Downloads/Videos/video4.mp4',
+		'/Users/arshiabehzad/Downloads/Videos/video5.mp4',
+		'/Users/arshiabehzad/Downloads/Videos/video6.mp4',
+		'/Users/arshiabehzad/Downloads/Videos/video7.mp4',
+		'/Users/arshiabehzad/Downloads/Videos/video8.mp4',
+		'/Users/arshiabehzad/Downloads/Videos/video9.mp4',
+		'/Users/arshiabehzad/Downloads/Videos/video10.mp4',
+		'/Users/arshiabehzad/Downloads/Videos/video11.mp4',
+		'/Users/arshiabehzad/Downloads/Videos/video12.mp4',
+		'/Users/arshiabehzad/Downloads/Videos/video13.mp4',
+		'/Users/arshiabehzad/Downloads/Videos/video14.mp4',
+		'/Users/arshiabehzad/Downloads/Videos/video15.mp4',
+		'/Users/arshiabehzad/Downloads/Videos/video16.mp4',
+		'/Users/arshiabehzad/Downloads/Videos/video17.mp4',
+		'/Users/arshiabehzad/Downloads/Videos/video18.mp4',
+		'/Users/arshiabehzad/Downloads/Videos/video19.mp4',
+		'/Users/arshiabehzad/Downloads/Videos/video20.mp4']
 	video_hashes = {video_path: get_video_segment_hashes(video_path) for video_path in database}
 	shot_boundaries_dict = {}
 	frame_histograms_dict = {}
@@ -142,18 +142,18 @@ def main():
 		shot_boundaries_dict[video] = shot_boundaries
 		frame_histograms_dict[video] = frame_histograms
 		
-	# Saving video hashes using Pickle
+		# Saving video hashes using Pickle
 	with open('video_hashes.pkl', 'wb') as file:
 		pickle.dump(video_hashes, file)
 		
-	# Saving shot boundaries and frame histograms using HDF5
+		# Saving shot boundaries and frame histograms using HDF5
 	with open('shot_boundaries_dict.pkl', 'wb') as file:
 		pickle.dump(shot_boundaries_dict, file)
 		
-	# Saving frame_histograms_dict
+		# Saving frame_histograms_dict
 	with open('frame_histograms_dict.pkl', 'wb') as file:
 		pickle.dump(frame_histograms_dict, file)
 		
-			
+		
 if __name__ == "__main__":
 	main()

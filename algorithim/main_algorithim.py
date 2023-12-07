@@ -61,7 +61,7 @@ def get_video_segment_hashes(video_path, segment_length=3, overlap_fraction=0.3)
 			
 		frame_count += 1
 		
-	# Process the last segment
+		# Process the last segment
 	if frames:
 		avg_frame = np.mean(np.array(frames), axis=0).astype(np.uint8)
 		frame_hash = imagehash.phash(Image.fromarray(avg_frame))
@@ -78,13 +78,13 @@ def get_video_segment_hashes(video_path, segment_length=3, overlap_fraction=0.3)
 	return hashes
 
 def format_timestamp(start_timestamp):
-		minutes = int(start_timestamp/60)
-		if minutes < 10:
-				minutes = f"0{int(start_timestamp/60)}"
-		seconds = int(start_timestamp%60)
-		if seconds < 10:
-				seconds = f"0{int(start_timestamp%60)}"
-		return f"{minutes}:{seconds}"
+	minutes = int(start_timestamp/60)
+	if minutes < 10:
+		minutes = f"0{int(start_timestamp/60)}"
+	seconds = int(start_timestamp%60)
+	if seconds < 10:
+		seconds = f"0{int(start_timestamp%60)}"
+	return f"{minutes}:{seconds}"
 
 def histogram_similarity(hist1, hist2):
 	"""Calculate similarity between two histograms."""
@@ -206,7 +206,7 @@ def find_best_match_per_video(clip_hashes, video_hashes):
 				
 		best_matches.append((video_path, min_distance))
 		
-	# Sort the list by distance (second item of the tuple), from smallest to largest
+		# Sort the list by distance (second item of the tuple), from smallest to largest
 	sorted_best_matches = sorted(best_matches, key=lambda x: x[1])
 	# profiler.disable()
 	# stats = pstats.Stats(profiler).sort_stats('cumtime')
@@ -235,7 +235,7 @@ def find_clip_start(main_video_path, clip_video_path, main_video_rgb, clip_video
 		frame_hist = frame_histograms[boundary]
 		similarity = histogram_similarity(average_hist, frame_hist)
 		similarity_rankings.append((boundary, similarity))
-	# Sort shot boundaries by similarity, in descending order
+		# Sort shot boundaries by similarity, in descending order
 	similarity_rankings.sort(key=lambda x: x[1], reverse=True)
 	# Narrow down to exact frame within the identified shot segment
 	candidates = []
@@ -265,17 +265,17 @@ def find_clip_start(main_video_path, clip_video_path, main_video_rgb, clip_video
 				else:
 					break
 				
-			# Only calculates average if every frame had a similarity score above frame_threshold
+				# Only calculates average if every frame had a similarity score above frame_threshold
 			if frame_count == len(key_frame_histograms):
 				average_similarity = total_similarity / frame_count
 				candidates.append( {'index': i, 'similarity': average_similarity})
 				
-			# The best average similarity is the one we keep
+				# The best average similarity is the one we keep
 			if average_similarity > best_similarity:
 				best_similarity = average_similarity
 				start_best_index = i
 				
-		# RGB verification
+				# RGB verification
 		if not candidates:
 			continue
 		candidates = sorted(candidates, key=lambda x: x['similarity'], reverse=True)
@@ -297,99 +297,95 @@ def find_clip_start(main_video_path, clip_video_path, main_video_rgb, clip_video
 	return start_best_index
 
 def process_video(video, clip_path, clip_rgb, shot_boundaries_dict, frame_histograms_dict, frame_threshold, found_match=None):
-		if found_match and found_match.is_set():
-				return video, -1, None  # Early return if match already found
+	if found_match and found_match.is_set():
+		return video, -1, None  # Early return if match already found
 	
-		shot_boundaries = shot_boundaries_dict[video]
-		frame_histograms = frame_histograms_dict[video]
+	shot_boundaries = shot_boundaries_dict[video]
+	frame_histograms = frame_histograms_dict[video]
 	
-		path_no_extension = get_filepath_without_extension(video)
-		start_frame = find_clip_start(video, clip_path, f"{path_no_extension}.rgb", clip_rgb, shot_boundaries,
-																	frame_histograms, frame_threshold, use_rgb_verification=True)
-		fps = cv2.VideoCapture(video).get(cv2.CAP_PROP_FPS)
-		return video, start_frame, fps
+	path_no_extension = get_filepath_without_extension(video)
+	start_frame = find_clip_start(video, clip_path, f"{path_no_extension}.rgb", clip_rgb, shot_boundaries,
+		frame_histograms, frame_threshold, use_rgb_verification=True)
+	fps = cv2.VideoCapture(video).get(cv2.CAP_PROP_FPS)
+	return video, start_frame, fps
 
 def adaptive_video_search(matching_videos, clip_path, clip_rgb, shot_boundaries_dict,
-													frame_histograms_dict, frame_threshold, start_time_main, switch_to_parallel_threshold=2):
-		found_match = threading.Event()
+	frame_histograms_dict, frame_threshold, start_time_main, switch_to_parallel_threshold=2):
+	found_match = threading.Event()
 	
-		# Process the first few videos sequentially
-		for video in matching_videos[:switch_to_parallel_threshold]:  # Adjust the number as needed
-				_, start_frame, fps = process_video(video[0], clip_path, clip_rgb, shot_boundaries_dict, frame_histograms_dict, frame_threshold)
-				if start_frame != -1:
-						start_timestamp = start_frame / fps
-						formated_timestamp = format_timestamp(start_timestamp)
-						computation_time = time.time() - start_time_main
-						print(f"Match found in {computation_time:.2f} seconds")
-						print(f"Clip starts at frame: {start_frame}, in {get_filename(video[0])} which is at timestamp: {formated_timestamp}")
-						return
-				else:
-						print(f"Clip not found in the {get_filename(video[0])}. Searching next best...")
-					
+	# Process the first few videos sequentially
+	for video in matching_videos[:switch_to_parallel_threshold]:  # Adjust the number as needed
+		_, start_frame, fps = process_video(video[0], clip_path, clip_rgb, shot_boundaries_dict, frame_histograms_dict, frame_threshold)
+		if start_frame != -1:
+			start_timestamp = start_frame / fps
+			formated_timestamp = format_timestamp(start_timestamp)
+			computation_time = time.time() - start_time_main
+			print(f"Match found in {computation_time:.2f} seconds")
+			print(f"Clip starts at frame: {start_frame}, in {get_filename(video[0])} which is at timestamp: {formated_timestamp}")
+			return
+		else:
+			print(f"Clip not found in the {get_filename(video[0])}. Searching next best...")
+		
 		# If no match found, proceed with parallel processing
-		print("Match not found in first few videos. Switching to parallel processing...")
-		with ThreadPoolExecutor(max_workers=4) as executor:
-				future_to_video = {executor.submit(process_video, video[0], clip_path, clip_rgb, shot_boundaries_dict, frame_histograms_dict, frame_threshold, found_match): video for video in matching_videos[switch_to_parallel_threshold:]}
+	print("Match not found in first few videos. Switching to parallel processing...")
+	with ThreadPoolExecutor(max_workers=4) as executor:
+		future_to_video = {executor.submit(process_video, video[0], clip_path, clip_rgb, shot_boundaries_dict, frame_histograms_dict, frame_threshold, found_match): video for video in matching_videos[switch_to_parallel_threshold:]}
+		
+		for future in as_completed(future_to_video):
+			video, start_frame, fps = future.result()
+			if start_frame != -1:
+				found_match.set()  # Signal that a match has been found
+				start_timestamp = start_frame / fps
+				formated_timestamp = format_timestamp(start_timestamp)
+				computation_time = time.time() - start_time_main
+				print(f"Clip starts at frame: {start_frame}, in {get_filename(video)} which is at timestamp: {formated_timestamp}")
+				print(f"Match found in {computation_time:.2f} seconds")
+				break
 			
-				for future in as_completed(future_to_video):
-						video, start_frame, fps = future.result()
-						if start_frame != -1:
-								found_match.set()  # Signal that a match has been found
-								start_timestamp = start_frame / fps
-								formated_timestamp = format_timestamp(start_timestamp)
-								computation_time = time.time() - start_time_main
-								print(f"Clip starts at frame: {start_frame}, in {get_filename(video)} which is at timestamp: {formated_timestamp}")
-								print(f"Match found in {computation_time:.2f} seconds")
-								break
-					
-					
+			
 def main(clip_path, clip_rgb):
 	database = ['/Users/arshiabehzad/Downloads/Videos/video1.mp4',
-				'/Users/arshiabehzad/Downloads/Videos/video2.mp4',
-				'/Users/arshiabehzad/Downloads/Videos/video3.mp4',
-				'/Users/arshiabehzad/Downloads/Videos/video4.mp4',
-				'/Users/arshiabehzad/Downloads/Videos/video5.mp4',
-				'/Users/arshiabehzad/Downloads/Videos/video6.mp4',
-				'/Users/arshiabehzad/Downloads/Videos/video7.mp4',
-				'/Users/arshiabehzad/Downloads/Videos/video8.mp4',
-				'/Users/arshiabehzad/Downloads/Videos/video9.mp4',
-				'/Users/arshiabehzad/Downloads/Videos/video10.mp4',
-				'/Users/arshiabehzad/Downloads/Videos/video11.mp4',
-				'/Users/arshiabehzad/Downloads/Videos/video12.mp4',
-				'/Users/arshiabehzad/Downloads/Videos/video13.mp4',
-				'/Users/arshiabehzad/Downloads/Videos/video14.mp4',
-				'/Users/arshiabehzad/Downloads/Videos/video15.mp4',
-				'/Users/arshiabehzad/Downloads/Videos/video16.mp4',
-				'/Users/arshiabehzad/Downloads/Videos/video17.mp4',
-				'/Users/arshiabehzad/Downloads/Videos/video18.mp4',
-				'/Users/arshiabehzad/Downloads/Videos/video19.mp4',
-				'/Users/arshiabehzad/Downloads/Videos/video20.mp4']
+		'/Users/arshiabehzad/Downloads/Videos/video2.mp4',
+		'/Users/arshiabehzad/Downloads/Videos/video3.mp4',
+		'/Users/arshiabehzad/Downloads/Videos/video4.mp4',
+		'/Users/arshiabehzad/Downloads/Videos/video5.mp4',
+		'/Users/arshiabehzad/Downloads/Videos/video6.mp4',
+		'/Users/arshiabehzad/Downloads/Videos/video7.mp4',
+		'/Users/arshiabehzad/Downloads/Videos/video8.mp4',
+		'/Users/arshiabehzad/Downloads/Videos/video9.mp4',
+		'/Users/arshiabehzad/Downloads/Videos/video10.mp4',
+		'/Users/arshiabehzad/Downloads/Videos/video11.mp4',
+		'/Users/arshiabehzad/Downloads/Videos/video12.mp4',
+		'/Users/arshiabehzad/Downloads/Videos/video13.mp4',
+		'/Users/arshiabehzad/Downloads/Videos/video14.mp4',
+		'/Users/arshiabehzad/Downloads/Videos/video15.mp4',
+		'/Users/arshiabehzad/Downloads/Videos/video16.mp4',
+		'/Users/arshiabehzad/Downloads/Videos/video17.mp4',
+		'/Users/arshiabehzad/Downloads/Videos/video18.mp4',
+		'/Users/arshiabehzad/Downloads/Videos/video19.mp4',
+		'/Users/arshiabehzad/Downloads/Videos/video20.mp4']
 	
-	clips = ['/Users/arshiabehzad/Downloads/Videos/video1_1.mp4']
 	
-	#clips = ["Downloads/Videos/video6_2.mp4"]
-	
-	with open('/Users/arshiabehzad/Downloads/csci-576-final-project/modules/algorithim/video_hashes.pkl', 'rb') as file:
+	with open('video_hashes.pkl', 'rb') as file:
 		video_hashes = pickle.load(file)
 		
-	# Loading shot_boundaries_dict
-	with open('/Users/arshiabehzad/Downloads/csci-576-final-project/modules/algorithim/shot_boundaries_dict.pkl', 'rb') as file:
+		# Loading shot_boundaries_dict
+	with open('shot_boundaries_dict.pkl', 'rb') as file:
 		shot_boundaries_dict = pickle.load(file)
 		
-	# Loading frame_histograms_dict
-	with open('/Users/arshiabehzad/Downloads/csci-576-final-project/modules/algorithim/frame_histograms_dict.pkl', 'rb') as file:
+		# Loading frame_histograms_dict
+	with open('frame_histograms_dict.pkl', 'rb') as file:
 		frame_histograms_dict = pickle.load(file)
 		
 	start_time_main = time.time()
 	clip_hash = get_video_segment_hashes(clip_path,  segment_length=3)
 	matching_videos = find_best_match_per_video(clip_hash, video_hashes)
-	#print(matching_videos)
 	end_time = time.time()
 	computation_time = end_time - start_time_main  # Calculate the total time taken
 	print(f"Video rankings found in {computation_time:.2f} seconds")
 	adaptive_video_search(matching_videos, clip_path, clip_rgb, shot_boundaries_dict, frame_histograms_dict, start_time_main=start_time_main, frame_threshold=0.99)
 	print("\n")
-
+	
 if __name__ == "__main__":
 	if len(sys.argv) == 3:
 		main(sys.argv[1], sys.argv[2])
