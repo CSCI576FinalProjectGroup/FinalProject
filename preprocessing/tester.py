@@ -14,8 +14,7 @@ def run_test_for_all_clips():
 		'/Users/arshiabehzad/Downloads/Videos/video8_1.mp4',
 		'/Users/arshiabehzad/Downloads/Videos/video9_1.mp4',
 		'/Users/arshiabehzad/Downloads/Videos/video10_1.mp4',
-		'/Users/arshiabehzad/Downloads/Videos/video11_1.mp4'
-	]
+		'/Users/arshiabehzad/Downloads/Videos/video11_1.mp4']
 	
 	for clip in clips:
 		clip_rgb = clip.replace('.mp4', '.rgb')

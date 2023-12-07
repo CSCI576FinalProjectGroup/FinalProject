@@ -2,10 +2,7 @@
 
 import warnings
 import sys
-warnings.filterwarnings("ignore")
-
 import os
-os.environ["IMAGEIO_FFMPEG_EXE"] = "/opt/homebrew/bin/ffmpeg"
 import cv2
 import imagehash
 import numpy as np
@@ -15,7 +12,9 @@ import librosa
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import threading
 import pickle
+from gui import play_video 
 
+warnings.filterwarnings("ignore")
 
 
 def calculate_histogram(frame):
@@ -322,11 +321,11 @@ def adaptive_video_search(matching_videos, clip_path, clip_rgb, shot_boundaries_
 			computation_time = time.time() - start_time_main
 			print(f"Match found in {computation_time:.2f} seconds")
 			print(f"Clip starts at frame: {start_frame}, in {get_filename(video[0])} which is at timestamp: {formated_timestamp}")
-			return
+			return video[0], start_frame
 		else:
 			print(f"Clip not found in the {get_filename(video[0])}. Searching next best...")
 		
-		# If no match found, proceed with parallel processing
+	# If no match found, proceed with parallel processing
 	print("Match not found in first few videos. Switching to parallel processing...")
 	with ThreadPoolExecutor(max_workers=4) as executor:
 		future_to_video = {executor.submit(process_video, video[0], clip_path, clip_rgb, shot_boundaries_dict, frame_histograms_dict, frame_threshold, found_match): video for video in matching_videos[switch_to_parallel_threshold:]}
@@ -340,7 +339,7 @@ def adaptive_video_search(matching_videos, clip_path, clip_rgb, shot_boundaries_
 				computation_time = time.time() - start_time_main
 				print(f"Clip starts at frame: {start_frame}, in {get_filename(video)} which is at timestamp: {formated_timestamp}")
 				print(f"Match found in {computation_time:.2f} seconds")
-				break
+				return video, start_frame
 			
 			
 def main(clip_path, clip_rgb):
@@ -366,15 +365,15 @@ def main(clip_path, clip_rgb):
 		'/Users/arshiabehzad/Downloads/Videos/video20.mp4']
 	
 	
-	with open('video_hashes.pkl', 'rb') as file:
+	with open('preprocessing/video_hashes.pkl', 'rb') as file:
 		video_hashes = pickle.load(file)
 		
 		# Loading shot_boundaries_dict
-	with open('shot_boundaries_dict.pkl', 'rb') as file:
+	with open('preprocessing/shot_boundaries_dict.pkl', 'rb') as file:
 		shot_boundaries_dict = pickle.load(file)
 		
 		# Loading frame_histograms_dict
-	with open('frame_histograms_dict.pkl', 'rb') as file:
+	with open('preprocessing/frame_histograms_dict.pkl', 'rb') as file:
 		frame_histograms_dict = pickle.load(file)
 		
 	start_time_main = time.time()
@@ -383,12 +382,17 @@ def main(clip_path, clip_rgb):
 	end_time = time.time()
 	computation_time = end_time - start_time_main  # Calculate the total time taken
 	print(f"Video rankings found in {computation_time:.2f} seconds")
-	adaptive_video_search(matching_videos, clip_path, clip_rgb, shot_boundaries_dict, frame_histograms_dict, start_time_main=start_time_main, frame_threshold=0.99)
+	video_path, start_frame = adaptive_video_search(matching_videos, clip_path, clip_rgb, shot_boundaries_dict, frame_histograms_dict, start_time_main=start_time_main, frame_threshold=0.99)
 	print("\n")
+	
+	if video_path is not None and start_frame != -1:
+		# Call the function from the second script
+		play_video(video_path, start_frame)
+	
 	
 if __name__ == "__main__":
 	if len(sys.argv) == 3:
 		main(sys.argv[1], sys.argv[2])
 	else:
-		print("This script requires exactly 2 arguments.")
+		print("This script requires exactly 2 arguments (clip.mp4 clip.rgb).")
 		

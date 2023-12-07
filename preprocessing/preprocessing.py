@@ -1,7 +1,5 @@
 import warnings
-warnings.filterwarnings("ignore")
 import os
-os.environ["IMAGEIO_FFMPEG_EXE"] = "/opt/homebrew/bin/ffmpeg"
 import cv2
 import imagehash
 import numpy as np
@@ -10,6 +8,8 @@ import time
 import librosa
 import pickle
 import h5py
+
+warnings.filterwarnings("ignore")
 
 def calculate_histogram(frame):
 	"""Calculate the color histogram for a frame."""
