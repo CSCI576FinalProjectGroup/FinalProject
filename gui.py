@@ -55,6 +55,10 @@ class VideoPlayer(QWidget):
         self.video = QVideoWidget()
         # self.video.move(0, 0)
         self.player = QMediaPlayer()
+        
+        video_resolution = self.__get_video_resolution(self.file_path)
+        if video_resolution:
+            self.video.setFixedSize(*video_resolution)
         self.player.setVideoOutput(self.video)
         self.player.setMedia(QMediaContent(QUrl.fromLocalFile(self.file_path)))
         self.player.setPosition(VideoPlayer.__frame_to_ms(self.start_frame))
@@ -96,6 +100,7 @@ class VideoPlayer(QWidget):
         self.timer = QTimer(self)
         self.timer.setInterval(self.__TICK_INTERVAL)
         self.timer.timeout.connect(self.__update_timer)
+        self.adjustSize()
         self.timer.start()
 
     def __play(self):
@@ -139,6 +144,18 @@ class VideoPlayer(QWidget):
     @staticmethod
     def __frame_to_ms(frame_number: int):
         return frame_number // 30 * 1000
+    
+    @staticmethod
+    def __get_video_resolution(file_path):
+        cap = cv2.VideoCapture(file_path)
+        if not cap.isOpened():
+            return None
+        
+        width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+        height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+        cap.release()
+        return width, height
+    
 
 
 def play_video(file_path, start_frame):
