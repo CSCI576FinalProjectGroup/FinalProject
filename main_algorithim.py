@@ -390,7 +390,7 @@ def main(clip_path, clip_rgb):
 	end_time = time.time()
 	computation_time = end_time - start_time_main  # Calculate the total time taken
 	print(f"Video rankings found in {computation_time:.2f} seconds")
-	video_path, start_frame = adaptive_video_search(matching_videos, clip_path, clip_rgb, shot_boundaries_dict, frame_histograms_dict, start_time_main=start_time_main, frame_threshold=0.99)
+	video_path, start_frame = adaptive_video_search(matching_videos, clip_path, clip_rgb, shot_boundaries_dict, frame_histograms_dict, start_time_main=start_time_main, frame_threshold=0.95)
 	print("\n")
 	
 	if video_path is not None and start_frame != -1:
