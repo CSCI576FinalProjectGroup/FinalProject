@@ -273,15 +273,17 @@ def find_clip_start(main_video_path, clip_video_path, main_video_rgb, clip_video
 				candidates.append( {'index': i, 'similarity': average_similarity})
 				
 				# The best average similarity is the one we keep
-			if average_similarity > best_similarity:
+			if average_similarity > best_similarity and not use_rgb_verification:
 				best_similarity = average_similarity
 				start_best_index = i
 				
-				# RGB verification
+		# RGB verification
+		#print(candidates)
+		if best_similarity > 0 and not use_rgb_verification:
+			return start_best_index
 		if not candidates:
 			continue
 		candidates = sorted(candidates, key=lambda x: x['similarity'], reverse=True)
-		
 		if use_rgb_verification:
 			for candidate in candidates:
 				# Extract RGB data for the first frame of the candidate segment from the main video
@@ -397,7 +399,7 @@ def main(clip_path, clip_rgb):
 	
 	
 if __name__ == "__main__":
-	if len(sys.argv) == 4:
+	if len(sys.argv) > 2:
 		main(sys.argv[1], sys.argv[2])
 	else:
 		print("This script requires at least 2 arguments (clip.mp4 clip.rgb).")
