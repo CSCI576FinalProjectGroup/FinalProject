@@ -397,8 +397,8 @@ def main(clip_path, clip_rgb):
 	
 	
 if __name__ == "__main__":
-	if len(sys.argv) == 3:
+	if len(sys.argv) == 4:
 		main(sys.argv[1], sys.argv[2])
 	else:
-		print("This script requires exactly 2 arguments (clip.mp4 clip.rgb).")
+		print("This script requires at least 2 arguments (clip.mp4 clip.rgb).")
 		
